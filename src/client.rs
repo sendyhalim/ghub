@@ -34,8 +34,23 @@ impl GithubClientV3 {
   }
 }
 
+pub enum GithubMergeMethod {
+  Merge,
+  Rebase,
+  Squash,
+}
+
+fn merge_method_to_string(merge_method: GithubMergeMethod) -> String {
+  return match merge_method {
+    GithubMergeMethod::Merge => "merge",
+    GithubMergeMethod::Squash => "squash",
+    GithubMergeMethod::Rebase => "rebase",
+  }
+  .to_owned();
+}
+
 impl GithubClientV3 {
-  pub async fn createPullRequest(
+  pub async fn create_pull_request(
     &mut self,
     title: &str,
     repo_path: &str,
@@ -63,6 +78,36 @@ impl GithubClientV3 {
     let res_body: Value = res.json().await.map_err(failure::Error::from)?;
 
     log::debug!("Done creating pull request, response {:?}", res_body);
+
+    return Ok(res_body);
+  }
+
+  pub async fn merge_pull_request(
+    &mut self,
+    repo_path: &str,
+    pull_number: &str,
+    merge_method: GithubMergeMethod,
+  ) -> ResultDynError<Value> {
+    let mut req_body = HashMap::new();
+    req_body.insert("merge_method", merge_method_to_string(merge_method));
+
+    log::debug!(
+      "Merging pull request {} pull number {}, req_body: {:?}",
+      repo_path,
+      pull_number,
+      req_body
+    );
+
+    let res = self
+      .http_client
+      .post(&format!("/repos/{}/pulls/{}/merge", repo_path, pull_number))
+      .json(&req_body)
+      .send()
+      .await?;
+
+    let res_body: Value = res.json().await.map_err(failure::Error::from)?;
+
+    log::debug!("Done merging pull request, response {:?}", res_body);
 
     return Ok(res_body);
   }
