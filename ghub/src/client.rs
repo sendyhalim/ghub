@@ -9,22 +9,33 @@ use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
 
 pub struct GithubClientV3 {
-  pub api_key: String,
-  pub api_secret: String,
   pub http_client: HttpClient,
 }
 
 impl GithubClientV3 {
-  pub fn new(api_key: String, api_secret: String) -> ResultDynError<GithubClientV3> {
+  pub fn new(personal_access_token: &str) -> ResultDynError<GithubClientV3> {
     let mut default_headers = HeaderMap::new();
     default_headers.insert(
       header::ACCEPT,
-      header::HeaderValue::from_str("application/vnd.github.v3+json")?,
+      header::HeaderValue::from_static("application/vnd.github.v3+json"),
+    );
+
+    default_headers.insert(
+      header::AUTHORIZATION,
+      header::HeaderValue::from_str(&format!("token {}", personal_access_token))?,
+    );
+
+    default_headers.insert(
+      header::USER_AGENT,
+      header::HeaderValue::from_static("reqwest"),
+    );
+
+    log::debug!(
+      "Creating http client with default headers {:?}",
+      default_headers
     );
 
     let client = GithubClientV3 {
-      api_key,
-      api_secret,
       http_client: HttpClientBuilder::new()
         .default_headers(default_headers)
         .build()?,
@@ -50,6 +61,10 @@ fn merge_method_to_string(merge_method: GithubMergeMethod) -> String {
 }
 
 impl GithubClientV3 {
+  pub fn api_path(api_path: &str) -> String {
+    return format!("https://api.github.com{}", api_path);
+  }
+
   pub async fn create_pull_request(
     &mut self,
     title: &str,
@@ -68,16 +83,21 @@ impl GithubClientV3 {
       req_body
     );
 
-    let res = self
+    let req = self
       .http_client
-      .post(&format!("/repos/{}/pulls", repo_path))
-      .json(&req_body)
-      .send()
-      .await?;
+      .post(&GithubClientV3::api_path(&format!(
+        "/repos/{}/pulls",
+        repo_path
+      )))
+      .body(serde_json::to_string(&req_body)?);
 
-    let res_body: Value = res.json().await.map_err(failure::Error::from)?;
+    log::debug!("Initiating request instance {:?}", req);
 
-    log::debug!("Done creating pull request, response {:?}", res_body);
+    let res = req.send().await;
+
+    log::debug!("Done creating pull request, response {:?}", res);
+
+    let res_body: Value = res?.json().await.map_err(failure::Error::from)?;
 
     return Ok(res_body);
   }
@@ -98,16 +118,21 @@ impl GithubClientV3 {
       req_body
     );
 
-    let res = self
+    let req = self
       .http_client
-      .post(&format!("/repos/{}/pulls/{}/merge", repo_path, pull_number))
-      .json(&req_body)
-      .send()
-      .await?;
+      .put(&GithubClientV3::api_path(&format!(
+        "/repos/{}/pulls/{}/merge",
+        repo_path, pull_number
+      )))
+      .body(serde_json::to_string(&req_body)?);
 
-    let res_body: Value = res.json().await.map_err(failure::Error::from)?;
+    log::debug!("Initiating request instance {:?}", req);
 
-    log::debug!("Done merging pull request, response {:?}", res_body);
+    let res = req.send().await;
+
+    log::debug!("Done merging pull request, response {:?}", res);
+
+    let res_body: Value = res?.json().await.map_err(failure::Error::from)?;
 
     return Ok(res_body);
   }

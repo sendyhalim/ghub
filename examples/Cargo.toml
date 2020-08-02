@@ -1,0 +1,29 @@
+[package]
+name = "examples"
+version = "0.0.1"
+authors = ["Sendy Halim <sendyhalim93@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ghub = { version = "0.0.1", path = "../ghub/" }
+env_logger = { version = "0.7" }
+futures = { version = "0.3" }
+tokio = { version = "0.2", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+dotenv = { version = "0.15" }
+
+[lib]
+name = "lib"
+path = "src/lib/lib.rs"
+
+
+[[bin]]
+name = "pull-request-create"
+path = "src/bin/pull_request/create.rs"
+
+[[bin]]
+name = "pull-request-merge"
+path = "src/bin/pull_request/merge.rs"
