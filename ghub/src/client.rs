@@ -64,14 +64,32 @@ impl GithubClientV3 {
   pub fn api_path(api_path: &str) -> String {
     return format!("https://api.github.com{}", api_path);
   }
+}
 
-  pub async fn create_pull_request(
+pub struct CreatePullRequestInput<'a> {
+  pub title: &'a str,
+  pub repo_path: &'a str,
+  pub branch_name: &'a str,
+  pub into_branch: &'a str,
+}
+
+pub struct MergePullRequestInput<'a> {
+  pub repo_path: &'a str,
+  pub pull_number: &'a str,
+  pub merge_method: GithubMergeMethod,
+}
+
+impl GithubClientV3 {
+  pub async fn create_pull_request<'a>(
     &mut self,
-    title: &str,
-    repo_path: &str,
-    branch_name: &str,
-    into_branch: &str,
+    input: CreatePullRequestInput<'a>,
   ) -> ResultDynError<Value> {
+    let CreatePullRequestInput {
+      title,
+      repo_path,
+      branch_name,
+      into_branch,
+    } = input;
     let mut req_body = HashMap::new();
     req_body.insert("title", title);
     req_body.insert("head", branch_name);
@@ -102,12 +120,15 @@ impl GithubClientV3 {
     return Ok(res_body);
   }
 
-  pub async fn merge_pull_request(
+  pub async fn merge_pull_request<'a>(
     &mut self,
-    repo_path: &str,
-    pull_number: &str,
-    merge_method: GithubMergeMethod,
+    input: MergePullRequestInput<'a>,
   ) -> ResultDynError<Value> {
+    let MergePullRequestInput {
+      repo_path,
+      pull_number,
+      merge_method,
+    } = input;
     let mut req_body = HashMap::new();
     req_body.insert("merge_method", merge_method_to_string(merge_method));
 
