@@ -1,6 +1,6 @@
-use ghub::client as ghub_client;
-use ghub::client::GithubClientV3;
 use ghub::types::ResultDynError;
+use ghub::v3::client::GithubClient;
+use ghub::v3::pull_request;
 
 use lib::client;
 
@@ -8,10 +8,11 @@ use lib::client;
 async fn main() -> ResultDynError<()> {
   env_logger::init();
 
-  let mut client: GithubClientV3 = client::new()?;
+  let mut client: GithubClient = client::new()?;
 
   let res_body = client
-    .create_pull_request(ghub_client::CreatePullRequestInput {
+    .pull_request
+    .create(pull_request::CreatePullRequestInput {
       title: "Trying to merge hey!",
       repo_path: "sendyhalim/dummy",
       branch_name: "hey-test",

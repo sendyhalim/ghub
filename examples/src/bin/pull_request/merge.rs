@@ -1,7 +1,6 @@
-use ghub::client as ghub_client;
-use ghub::client::GithubClientV3;
-use ghub::client::GithubMergeMethod;
 use ghub::types::ResultDynError;
+use ghub::v3::client::GithubClient;
+use ghub::v3::pull_request;
 
 use lib::client;
 
@@ -9,13 +8,14 @@ use lib::client;
 async fn main() -> ResultDynError<()> {
   env_logger::init();
 
-  let mut client: GithubClientV3 = client::new()?;
+  let mut client: GithubClient = client::new()?;
 
   let res_body = client
-    .merge_pull_request(ghub_client::MergePullRequestInput {
+    .pull_request
+    .merge(pull_request::MergePullRequestInput {
       repo_path: "sendyhalim/dummy",
-      pull_number: "6",
-      merge_method: GithubMergeMethod::Squash,
+      pull_number: "7",
+      merge_method: pull_request::GithubMergeMethod::Squash,
     })
     .await?;
 

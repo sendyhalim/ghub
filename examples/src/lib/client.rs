@@ -1,9 +1,9 @@
 use dotenv;
-use ghub::client::GithubClientV3;
 use ghub::types::ResultDynError;
+use ghub::v3::client::GithubClient;
 
-pub fn new() -> ResultDynError<GithubClientV3> {
+pub fn new() -> ResultDynError<GithubClient> {
   dotenv::dotenv().ok();
 
-  return GithubClientV3::new(&std::env::var("GITHUB_TOKEN")?);
+  return GithubClient::new(&std::env::var("GITHUB_TOKEN")?);
 }

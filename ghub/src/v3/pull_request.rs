@@ -1,45 +1,19 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
-use crate::types::ResultDynError;
-
-use reqwest::header;
-use reqwest::header::HeaderMap;
 use reqwest::Client as HttpClient;
-use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
 
-pub struct GithubClientV3 {
-  pub http_client: HttpClient,
+use crate::types::ResultDynError;
+use crate::v3::util as client_util;
+
+pub struct GithubPullRequestClient {
+  pub(crate) http_client: Rc<HttpClient>,
 }
 
-impl GithubClientV3 {
-  pub fn new(personal_access_token: &str) -> ResultDynError<GithubClientV3> {
-    let mut default_headers = HeaderMap::new();
-    default_headers.insert(
-      header::ACCEPT,
-      header::HeaderValue::from_static("application/vnd.github.v3+json"),
-    );
-
-    default_headers.insert(
-      header::AUTHORIZATION,
-      header::HeaderValue::from_str(&format!("token {}", personal_access_token))?,
-    );
-
-    default_headers.insert(
-      header::USER_AGENT,
-      header::HeaderValue::from_static("reqwest"),
-    );
-
-    log::debug!(
-      "Creating http client with default headers {:?}",
-      default_headers
-    );
-
-    let client = GithubClientV3 {
-      http_client: HttpClientBuilder::new()
-        .default_headers(default_headers)
-        .build()?,
-    };
+impl GithubPullRequestClient {
+  pub fn new(http_client: Rc<HttpClient>) -> ResultDynError<GithubPullRequestClient> {
+    let client = GithubPullRequestClient { http_client };
 
     return Ok(client);
   }
@@ -60,12 +34,6 @@ fn merge_method_to_string(merge_method: GithubMergeMethod) -> String {
   .to_owned();
 }
 
-impl GithubClientV3 {
-  pub fn api_path(api_path: &str) -> String {
-    return format!("https://api.github.com{}", api_path);
-  }
-}
-
 pub struct CreatePullRequestInput<'a> {
   pub title: &'a str,
   pub repo_path: &'a str,
@@ -79,11 +47,8 @@ pub struct MergePullRequestInput<'a> {
   pub merge_method: GithubMergeMethod,
 }
 
-impl GithubClientV3 {
-  pub async fn create_pull_request<'a>(
-    &mut self,
-    input: CreatePullRequestInput<'a>,
-  ) -> ResultDynError<Value> {
+impl GithubPullRequestClient {
+  pub async fn create<'a>(&mut self, input: CreatePullRequestInput<'a>) -> ResultDynError<Value> {
     let CreatePullRequestInput {
       title,
       repo_path,
@@ -103,7 +68,7 @@ impl GithubClientV3 {
 
     let req = self
       .http_client
-      .post(&GithubClientV3::api_path(&format!(
+      .post(&client_util::api_path(&format!(
         "/repos/{}/pulls",
         repo_path
       )))
@@ -120,10 +85,7 @@ impl GithubClientV3 {
     return Ok(res_body);
   }
 
-  pub async fn merge_pull_request<'a>(
-    &mut self,
-    input: MergePullRequestInput<'a>,
-  ) -> ResultDynError<Value> {
+  pub async fn merge<'a>(&mut self, input: MergePullRequestInput<'a>) -> ResultDynError<Value> {
     let MergePullRequestInput {
       repo_path,
       pull_number,
@@ -141,7 +103,7 @@ impl GithubClientV3 {
 
     let req = self
       .http_client
-      .put(&GithubClientV3::api_path(&format!(
+      .put(&client_util::api_path(&format!(
         "/repos/{}/pulls/{}/merge",
         repo_path, pull_number
       )))
