@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use reqwest::Client as HttpClient;
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::types::ResultDynError;
@@ -19,21 +21,19 @@ impl GithubPullRequestClient {
   }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
 pub enum GithubMergeMethod {
+  #[serde(rename = "merge")]
   Merge,
+
+  #[serde(rename = "rebase")]
   Rebase,
+
+  #[serde(rename = "squash")]
   Squash,
 }
 
-fn merge_method_to_string(merge_method: GithubMergeMethod) -> String {
-  return match merge_method {
-    GithubMergeMethod::Merge => "merge",
-    GithubMergeMethod::Squash => "squash",
-    GithubMergeMethod::Rebase => "rebase",
-  }
-  .to_owned();
-}
-
+#[derive(Debug)]
 pub struct CreatePullRequestInput<'a> {
   pub title: &'a str,
   pub repo_path: &'a str,
@@ -41,6 +41,7 @@ pub struct CreatePullRequestInput<'a> {
   pub into_branch: &'a str,
 }
 
+#[derive(Debug)]
 pub struct MergePullRequestInput<'a> {
   pub repo_path: &'a str,
   pub pull_number: &'a str,
@@ -92,7 +93,7 @@ impl GithubPullRequestClient {
       merge_method,
     } = input;
     let mut req_body = HashMap::new();
-    req_body.insert("merge_method", merge_method_to_string(merge_method));
+    req_body.insert("merge_method", merge_method);
 
     log::debug!(
       "Merging pull request {} pull number {}, req_body: {:?}",
