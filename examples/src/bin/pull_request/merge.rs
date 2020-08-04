@@ -8,7 +8,7 @@ use lib::client;
 async fn main() -> ResultDynError<()> {
   env_logger::init();
 
-  let mut client: GithubClient = client::new()?;
+  let client: GithubClient = client::new()?;
 
   let res_body = client
     .pull_request

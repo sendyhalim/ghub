@@ -48,7 +48,7 @@ pub struct MergePullRequestInput<'a> {
 }
 
 impl GithubPullRequestClient {
-  pub async fn create<'a>(&mut self, input: CreatePullRequestInput<'a>) -> ResultDynError<Value> {
+  pub async fn create<'a>(&self, input: CreatePullRequestInput<'a>) -> ResultDynError<Value> {
     let CreatePullRequestInput {
       title,
       repo_path,
@@ -85,7 +85,7 @@ impl GithubPullRequestClient {
     return Ok(res_body);
   }
 
-  pub async fn merge<'a>(&mut self, input: MergePullRequestInput<'a>) -> ResultDynError<Value> {
+  pub async fn merge<'a>(&self, input: MergePullRequestInput<'a>) -> ResultDynError<Value> {
     let MergePullRequestInput {
       repo_path,
       pull_number,
