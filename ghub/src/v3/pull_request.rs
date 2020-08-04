@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use reqwest::Client as HttpClient;
 use serde_json::Value;
@@ -8,11 +8,11 @@ use crate::types::ResultDynError;
 use crate::v3::util as client_util;
 
 pub struct GithubPullRequestClient {
-  pub(crate) http_client: Rc<HttpClient>,
+  pub(crate) http_client: Arc<HttpClient>,
 }
 
 impl GithubPullRequestClient {
-  pub fn new(http_client: Rc<HttpClient>) -> ResultDynError<GithubPullRequestClient> {
+  pub fn new(http_client: Arc<HttpClient>) -> ResultDynError<GithubPullRequestClient> {
     let client = GithubPullRequestClient { http_client };
 
     return Ok(client);

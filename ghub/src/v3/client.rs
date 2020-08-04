@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use reqwest::header;
 use reqwest::header::HeaderMap;
@@ -9,7 +9,7 @@ use crate::types::ResultDynError;
 use crate::v3::pull_request::GithubPullRequestClient;
 
 pub struct GithubClient {
-  http_client: Rc<HttpClient>,
+  http_client: Arc<HttpClient>,
   pub pull_request: GithubPullRequestClient,
 }
 
@@ -40,7 +40,7 @@ impl GithubClient {
       .default_headers(default_headers)
       .build()?;
 
-    let http_client = Rc::new(http_client);
+    let http_client = Arc::new(http_client);
 
     let pull_request = GithubPullRequestClient {
       http_client: http_client.clone(),
