@@ -7,7 +7,7 @@ Add the dependency into your Cargo.toml
 
 ```toml
 [dependencies]
-ghub = { version = "0.0.1" }
+ghub = { version = "0.1" }
 ```
 
 
