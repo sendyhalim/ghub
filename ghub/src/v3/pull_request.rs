@@ -75,7 +75,7 @@ impl GithubPullRequestClient {
       )))
       .body(serde_json::to_string(&req_body)?);
 
-    log::debug!("Initiating request instance {:?}", req);
+    log::debug!("Initiating request instance {:?} {:?}", req, req_body);
 
     let res = req.send().await;
 
@@ -110,7 +110,7 @@ impl GithubPullRequestClient {
       )))
       .body(serde_json::to_string(&req_body)?);
 
-    log::debug!("Initiating request instance {:?}", req);
+    log::debug!("Initiating request instance {:?} {:?}", req, req_body);
 
     let res = req.send().await;
 
