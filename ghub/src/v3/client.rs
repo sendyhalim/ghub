@@ -6,11 +6,15 @@ use reqwest::Client as HttpClient;
 use reqwest::ClientBuilder as HttpClientBuilder;
 
 use crate::types::ResultDynError;
+use crate::v3::branch::GithubBranchClient;
 use crate::v3::pull_request::GithubPullRequestClient;
+use crate::v3::reference::GithubReferenceClient;
 
 pub struct GithubClient {
   http_client: Arc<HttpClient>,
+  pub reference: Arc<GithubReferenceClient>,
   pub pull_request: GithubPullRequestClient,
+  pub branch: GithubBranchClient,
 }
 
 impl GithubClient {
@@ -46,9 +50,19 @@ impl GithubClient {
       http_client: http_client.clone(),
     };
 
+    let reference = Arc::from(GithubReferenceClient {
+      http_client: http_client.clone(),
+    });
+
+    let branch = GithubBranchClient {
+      reference_client: reference.clone(),
+    };
+
     let client = GithubClient {
       http_client: http_client.clone(),
       pull_request,
+      reference,
+      branch,
     };
 
     return Ok(client);

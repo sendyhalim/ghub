@@ -81,7 +81,11 @@ impl GithubPullRequestClient {
 
     log::debug!("Done creating pull request, response {:?}", res);
 
-    let res_body: Value = res?.json().await.map_err(failure::Error::from)?;
+    let res_body: Value = res?
+      .error_for_status()?
+      .json()
+      .await
+      .map_err(failure::Error::from)?;
 
     return Ok(res_body);
   }
@@ -116,7 +120,11 @@ impl GithubPullRequestClient {
 
     log::debug!("Done merging pull request, response {:?}", res);
 
-    let res_body: Value = res?.json().await.map_err(failure::Error::from)?;
+    let res_body: Value = res?
+      .error_for_status()?
+      .json()
+      .await
+      .map_err(failure::Error::from)?;
 
     return Ok(res_body);
   }
