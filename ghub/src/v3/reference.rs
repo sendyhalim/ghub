@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use reqwest::Client as HttpClient;
-use serde_json::Value;
 
 use crate::types::ResultDynError;
 use crate::v3::util as client_util;

@@ -81,13 +81,7 @@ impl GithubPullRequestClient {
 
     log::debug!("Done creating pull request, response {:?}", res);
 
-    let res_body: Value = res?
-      .error_for_status()?
-      .json()
-      .await
-      .map_err(failure::Error::from)?;
-
-    return Ok(res_body);
+    return client_util::result_from_server_response(res?).await;
   }
 
   pub async fn merge<'a>(&self, input: MergePullRequestInput<'a>) -> ResultDynError<Value> {
@@ -120,12 +114,6 @@ impl GithubPullRequestClient {
 
     log::debug!("Done merging pull request, response {:?}", res);
 
-    let res_body: Value = res?
-      .error_for_status()?
-      .json()
-      .await
-      .map_err(failure::Error::from)?;
-
-    return Ok(res_body);
+    return client_util::result_from_server_response(res?).await;
   }
 }
