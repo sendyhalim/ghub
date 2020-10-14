@@ -8,7 +8,7 @@ pub(crate) fn api_path(api_path: &str) -> String {
 }
 
 pub(crate) async fn result_from_server_response(res: Response) -> ResultDynError<Value> {
-  if res.status() != 200 {
+  if res.error_for_status_ref().is_err() {
     let res_body: Value = res.json().await.map_err(failure::Error::from)?;
     let err_msg: String = res_body["errors"][0]["message"]
       .as_str()
