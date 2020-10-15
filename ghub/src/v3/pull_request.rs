@@ -48,6 +48,13 @@ pub struct MergePullRequestInput<'a> {
   pub merge_method: GithubMergeMethod,
 }
 
+#[derive(Debug)]
+pub struct GetPullRequestByHeadInput<'a> {
+  pub repo_path: &'a str,
+  pub branch_owner: &'a str,
+  pub branch_name: &'a str,
+}
+
 impl GithubPullRequestClient {
   pub async fn create<'a>(&self, input: CreatePullRequestInput<'a>) -> ResultDynError<Value> {
     let CreatePullRequestInput {
@@ -115,5 +122,46 @@ impl GithubPullRequestClient {
     log::debug!("Done merging pull request, response {:?}", res);
 
     return client_util::result_from_server_response(res?).await;
+  }
+
+  /// Get pull request by head in format `{branch_owner}:{branch_name}'`
+  ///
+  /// So for example if my user is sendyhalim and I'm creating a PR
+  /// with branch name `x` then head will be `sendyhalim:x`.
+  pub async fn get_by_head<'a>(
+    &self,
+    input: GetPullRequestByHeadInput<'a>,
+  ) -> ResultDynError<Option<Value>> {
+    log::debug!("Getting pull request by head {:?}", input);
+
+    let GetPullRequestByHeadInput {
+      branch_owner,
+      repo_path,
+      branch_name,
+    } = input;
+
+    let req = self.http_client.get(&client_util::api_path(&format!(
+      "/repos/{}/pulls?head={}:{}",
+      repo_path, branch_owner, branch_name
+    )));
+
+    log::debug!("Initiating request instance {:?}", req);
+
+    let res = req.send().await;
+
+    log::debug!("Done listing pull request, response {:?}", res);
+
+    let body: Value = client_util::result_from_server_response(res?).await?;
+
+    log::debug!("Response body {:?}", body);
+
+    // Try to get the first index,
+    // if it's not an object then we assume it's the PR does not exist
+    let pull_request: Option<Value> = match &body[0] {
+      Value::Object(obj) => Some(Value::Object(obj.to_owned())),
+      _ => None,
+    };
+
+    return Ok(pull_request);
   }
 }
