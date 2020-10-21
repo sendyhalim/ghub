@@ -19,7 +19,10 @@ async fn main() -> ResultDynError<()> {
     })
     .await?;
 
-  println!("Done merging {:?}", serde_json::to_string(&res_body)?);
+  println!(
+    "Done merging {:?}",
+    serde_json::to_string_pretty(&res_body)?
+  );
 
   return Ok(());
 }

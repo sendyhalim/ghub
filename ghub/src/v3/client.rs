@@ -55,6 +55,7 @@ impl GithubClient {
     });
 
     let branch = GithubBranchClient {
+      http_client: http_client.clone(),
       reference_client: reference.clone(),
     };
 

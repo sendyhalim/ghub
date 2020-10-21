@@ -22,7 +22,7 @@ async fn main() -> ResultDynError<()> {
 
   println!(
     "Done creating pull request {}",
-    serde_json::to_string(&res_body)?
+    serde_json::to_string_pretty(&res_body)?
   );
 
   return Ok(());

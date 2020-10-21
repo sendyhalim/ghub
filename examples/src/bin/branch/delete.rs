@@ -18,7 +18,10 @@ async fn main() -> ResultDynError<()> {
 
   let res_body = client.branch.delete(input).await?;
 
-  println!("Done deleting branch {}", serde_json::to_string(&res_body)?);
+  println!(
+    "Done deleting branch {}",
+    serde_json::to_string_pretty(&res_body)?
+  );
 
   return Ok(());
 }

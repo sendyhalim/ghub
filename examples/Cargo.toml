@@ -33,5 +33,10 @@ name = "pull-request-get-by-head"
 path = "src/bin/pull_request/get_by_head.rs"
 
 [[bin]]
+name = "branch-list"
+path = "src/bin/branch/list.rs"
+
+[[bin]]
 name = "branch-delete"
 path = "src/bin/branch/delete.rs"
+

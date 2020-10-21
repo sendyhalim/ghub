@@ -1,6 +1,6 @@
 use ghub::types::ResultDynError;
+use ghub::v3::branch;
 use ghub::v3::client::GithubClient;
-use ghub::v3::pull_request;
 
 use lib::client;
 
@@ -9,18 +9,19 @@ async fn main() -> ResultDynError<()> {
   env_logger::init();
 
   let client: GithubClient = client::new()?;
+  let input = branch::ListBranchInput {
+    repo_path: "sendyhalim/dummy",
+    protected: None,
+    per_page: 100,
+    page: 1,
+  };
 
-  let res_body = client
-    .pull_request
-    .get_by_head(pull_request::GetPullRequestByHeadInput {
-      repo_path: "sendyhalim/dummy",
-      branch_name: "do-not-delete-pr",
-      branch_owner: "sendy",
-    })
-    .await?;
+  println!("Listing branch {:?}", input);
+
+  let res_body = client.branch.list(input).await?;
 
   println!(
-    "Done getting pull request {}",
+    "Done listing branch {}",
     serde_json::to_string_pretty(&res_body)?
   );
 
