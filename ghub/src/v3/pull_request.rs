@@ -145,7 +145,10 @@ impl GithubPullRequestClient {
       repo_path, branch_owner, branch_name
     )));
 
-    log::debug!("Initiating request instance {:?}", req);
+    log::debug!(
+      "Initiating request instance to list pull requests {:?}",
+      req
+    );
 
     let res = req.send().await;
 
@@ -153,7 +156,7 @@ impl GithubPullRequestClient {
 
     let body: Value = client_util::result_from_server_response(res?).await?;
 
-    log::debug!("Response body {:?}", body);
+    log::debug!("Response body from listing pull request {:?}", body);
 
     // Try to get the first index,
     // if it's not an object then we assume it's the PR does not exist
@@ -162,6 +165,33 @@ impl GithubPullRequestClient {
       _ => None,
     };
 
-    return Ok(pull_request);
+    // We will try to get the PR via single record GET API req because there are
+    // some fields that only available on single record API.
+    // For example, the Mergeable field is compute-intensive, so it's only exposed on Get.
+    // Ref: https://github.com/octokit/octokit.net/issues/1710#issuecomment-342331188
+
+    if pull_request.is_none() {
+      return Ok(pull_request);
+    }
+
+    let pull_request = pull_request.unwrap();
+
+    let req = self.http_client.get(&client_util::api_path(&format!(
+      "/repos/{}/pulls/{}",
+      repo_path, pull_request["number"]
+    )));
+
+    log::debug!(
+      "Initiating request instance to get pull request detail {:?}",
+      req
+    );
+
+    let res = req.send().await;
+
+    log::debug!("Done getting pull request detail, response {:?}", res);
+
+    return client_util::result_from_server_response(res?)
+      .await
+      .map(Some);
   }
 }

@@ -14,8 +14,8 @@ async fn main() -> ResultDynError<()> {
     .pull_request
     .get_by_head(pull_request::GetPullRequestByHeadInput {
       repo_path: "sendyhalim/dummy",
-      branch_name: "do-not-delete-pr",
-      branch_owner: "sendy",
+      branch_name: "hey-T2200-wut",
+      branch_owner: "sendyhalim",
     })
     .await?;
 
